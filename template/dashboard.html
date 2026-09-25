@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — NoteVault{% endblock %}
+{% block content %}
+<section class="dashboard-header">
+  <h2>Your Notes</h2>
+  <form method="GET" class="search-bar">
+    <input type="text" name="q" placeholder="Search notes..." value="{{ search }}">
+    <select name="category">
+      <option value="">All categories</option>
+      {% for c in categories %}
+        <option value="{{ c }}" {% if c == active_category %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary">Filter</button>
+  </form>
+</section>
+
+{% if notes %}
+<div class="note-grid">
+  {% for note in notes %}
+  <div class="note-card">
+    <div class="note-card-header">
+      <span class="category-pill">{{ note.category }}</span>
+      <span class="note-date">{{ note.updated_at.strftime('%b %d, %Y') }}</span>
+    </div>
+    <h3>{{ note.title }}</h3>
+    <p class="note-preview">{{ note.content[:140] }}{% if note.content|length > 140 %}...{% endif %}</p>
+    {% if note.tag_list() %}
+    <div class="tags">
+      {% for tag in note.tag_list() %}<span class="tag">#{{ tag }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="note-actions">
+      <a href="{{ url_for('edit_note', note_id=note.id) }}" class="btn btn-small">Edit</a>
+      <form method="POST" action="{{ url_for('delete_note', note_id=note.id) }}"
+            onsubmit="return confirm('Delete this note?');">
+        <button type="submit" class="btn btn-small btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">No notes yet. <a href="{{ url_for('new_note') }}">Create your first note</a>.</p>
+{% endif %}
+{% endblock %}
